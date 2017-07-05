@@ -1,4 +1,4 @@
-// This sectin contains some game constants. It is not super interesting
+// This section contains some game constants. It is not super interesting
 var GAME_WIDTH = 375;
 var GAME_HEIGHT = 500;
 
@@ -9,9 +9,13 @@ var MAX_ENEMIES = 3;
 var PLAYER_WIDTH = 75;
 var PLAYER_HEIGHT = 54;
 
+var BULLET_WIDTH = 10;
+var BULLET_HEIGHT = 10;
+
 // These two constants keep us from using "magic numbers" in our code
-var LEFT_ARROW_CODE = 37;
-var RIGHT_ARROW_CODE = 39;
+var LEFT_ARROW_CODE = 37 && 65;
+var RIGHT_ARROW_CODE = 39 && 68;
+var SPACEBAR_CODE = 32;
 
 // These two constants allow us to DRY
 var MOVE_LEFT = 'left';
@@ -19,7 +23,7 @@ var MOVE_RIGHT = 'right';
 
 // Preload game images
 var images = {};
-['enemy.png', 'stars.png', 'player.png'].forEach(imgName => {
+['enemy.png', 'stars.png', 'player.png', 'bullet.png'].forEach(imgName => {
     var img = document.createElement('img');
     img.src = 'images/' + imgName;
     images[imgName] = img;
@@ -30,8 +34,15 @@ var images = {};
 
 
 // This section is where you will be doing most of your coding
-class Enemy {
+class Entity {
+     render(ctx) {
+        ctx.drawImage(this.sprite, this.x, this.y);
+    }
+}
+
+class Enemy extends Entity {
     constructor(xPos) {
+        super();
         this.x = xPos;
         this.y = -ENEMY_HEIGHT;
         this.sprite = images['enemy.png'];
@@ -43,14 +54,13 @@ class Enemy {
     update(timeDiff) {
         this.y = this.y + timeDiff * this.speed;
     }
-
-    render(ctx) {
-        ctx.drawImage(this.sprite, this.x, this.y);
-    }
+    
+   
 }
 
-class Player {
+class Player extends Entity {
     constructor() {
+        super();
         this.x = 2 * PLAYER_WIDTH;
         this.y = GAME_HEIGHT - PLAYER_HEIGHT - 10;
         this.sprite = images['player.png'];
@@ -65,10 +75,28 @@ class Player {
             this.x = this.x + PLAYER_WIDTH;
         }
     }
+    shoot(){
+        new Bullet;
+    }
+}
 
+class Bullet {
+     constructor(xPos) {
+        this.x = 0;
+        this.y = 0;
+        this.sprite = images['bullet.png'];
+
+       //bullet speed
+        this.speed = 0.5;
+    }
+    update(timeDiff) {
+         this.y = this.y + timeDiff * -this.speed;
+     }
+    
     render(ctx) {
         ctx.drawImage(this.sprite, this.x, this.y);
-    }
+    
+    } 
 }
 
 
@@ -84,7 +112,6 @@ class Engine {
     constructor(element) {
         // Setup the player
         this.player = new Player();
-
         // Setup enemies, making sure there are always three
         this.setupEnemies();
 
@@ -113,20 +140,21 @@ class Engine {
             this.addEnemy();
         }
     }
-
+    
+    
     // This method finds a random spot where there is no enemy, and puts one in there
     addEnemy() {
         var enemySpots = GAME_WIDTH / ENEMY_WIDTH;
 
         var enemySpot;
         // Keep looping until we find a free enemy spot at random
-        while (!enemySpot || this.enemies[enemySpot]) {
+        while (!enemySpots || this.enemies[enemySpot]) {
             enemySpot = Math.floor(Math.random() * enemySpots);
         }
 
-        this.enemies[enemySpot] = new Enemy(enemySpot * ENEMY_WIDTH);
+        this.enemies[enemySpot] = new Enemy (enemySpot * ENEMY_WIDTH);
     }
-
+    
     // This method kicks off the game
     start() {
         this.score = 0;
@@ -139,6 +167,9 @@ class Engine {
             }
             else if (e.keyCode === RIGHT_ARROW_CODE) {
                 this.player.move(MOVE_RIGHT);
+            }
+            else if(e.keyCode === SPACEBAR_CODE) {
+                this.player.shoot();
             }
         });
 
@@ -198,15 +229,19 @@ class Engine {
         }
     }
 
-    isPlayerDead() {
-        // TODO: fix this function!
-        return false;
+     isPlayerDead() {
+       var dead = false;
+       var hitbox = GAME_HEIGHT - PLAYER_HEIGHT - ENEMY_HEIGHT;
+       this.enemies.forEach((enemy, enemyIdx) => {
+           if(enemy.x === this.player.x && enemy.y > hitbox) {
+                dead = true;
+                return;
+            }
+       });
+        
+        return dead;
     }
 }
-
-
-
-
 
 // This section will start the game
 var gameEngine = new Engine(document.getElementById('app'));
