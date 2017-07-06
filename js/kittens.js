@@ -17,11 +17,59 @@ var LEFT_ARROW_CODE = 37;
 var RIGHT_ARROW_CODE = 39;
 var A_CODE = 65;
 var D_CODE= 68;
-var SPACEBAR_CODE = 32;
+var ENTER_CODE = 13;
 
 // These two constants allow us to DRY
 var MOVE_LEFT = 'left';
 var MOVE_RIGHT = 'right';
+
+//Audio
+class Music {
+    constructor() {
+        this.music;
+        this.hornSound;
+    }
+    
+    backgroundMusic() {
+        this.music = new Sound("audio/glitchmob.mp3");
+        this.music.play();
+    }
+    
+    horn() {
+        this.hornSound = new Sound("audio/ting.wav");
+        this.hornSound.play();
+    }
+    
+    stopMusic() {
+        this.music.pause();
+    }
+    
+    stopHorn() {
+        this.hornSound.pause()
+    }
+    
+}
+
+class Sound {
+    constructor(src) {
+        this.sound = document.createElement("audio");
+        this.sound.src = src;
+        this.sound.setAttribute("preload", "auto");
+        this.sound.setAttribute("controls", "none");
+        this.sound.style.display = "background: red";
+        document.body.appendChild(this.sound);
+    }    
+    play() {
+        this.sound.play();
+    }
+    pause(){
+        this.sound.pause();
+    }
+}
+
+
+// step 2: make a music class that extends the engine and add a super in there. 
+//
 
 // Preload game images
 var images = {};
@@ -86,6 +134,9 @@ class Player extends Entity {
     
 
     // This method is called by the game engine when left/right arrows are pressed
+         
+        
+    
     move(direction) {
         if (direction === MOVE_LEFT && this.x > 0) {
             this.x = this.x - PLAYER_WIDTH;
@@ -167,8 +218,16 @@ class Engine {
     start() {
         this.score = 0;
         this.lastFrame = Date.now();
+        
+          
 
         // Listen for keyboard lef t/right and update the player
+         document.addEventListener('keypress', e => {
+            if (e.keyCode === ENTER_CODE) {
+            location.reload();
+            }
+        });
+        
         document.addEventListener('keydown', e => {
             if (e.keyCode === LEFT_ARROW_CODE) {
                 this.player.move(MOVE_LEFT);
@@ -185,7 +244,9 @@ class Engine {
             }
 
          });
-
+        // Play background music
+        this.gameMusic = new Music();
+        this.gameMusic.backgroundMusic();
         this.gameLoop();
     }
 
@@ -229,7 +290,8 @@ class Engine {
             // If they are dead, then it's game over!
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
-            this.ctx.fillText(this.score + ' GAME OVER', 5, 30);
+            this.ctx.fillText(this.score + ' GAME OVER - PRESS ENTER TO RESTART', 5, 30);
+       
         }
         else {
             // If player is not dead, then draw the score
@@ -249,10 +311,8 @@ class Engine {
        this.enemies.forEach((enemy, enemyIdx) => {
            if(enemy.x === this.player.x && enemy.y > hitbox) {
                 dead = true;
-                setTimeout(function(){
-                this.location.reload();
-                }, 3000);
-                
+             
+            
                 
                 return;
             }
