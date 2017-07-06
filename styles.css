@@ -1,11 +1,13 @@
 body {
-    background-color: pink;
-    
+    background-color: purple;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 h1 {
-    color: teal;
-    font-family: impact;
+    color: turquoise;
+    font-family: 'Monoton', Cursive;
     text-align: center;
 }
 

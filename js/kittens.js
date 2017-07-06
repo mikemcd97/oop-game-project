@@ -1,5 +1,5 @@
 // This section contains some game constants. It is not super interesting
-var GAME_WIDTH = 375;
+var GAME_WIDTH = 750;
 var GAME_HEIGHT = 500;
 
 var ENEMY_WIDTH = 75;
@@ -13,8 +13,10 @@ var BULLET_WIDTH = 10;
 var BULLET_HEIGHT = 10;
 
 // These two constants keep us from using "magic numbers" in our code
-var LEFT_ARROW_CODE = 37 && 65;
-var RIGHT_ARROW_CODE = 39 && 68;
+var LEFT_ARROW_CODE = 37;
+var RIGHT_ARROW_CODE = 39;
+var A_CODE = 65;
+var D_CODE= 68;
 var SPACEBAR_CODE = 32;
 
 // These two constants allow us to DRY
@@ -58,13 +60,30 @@ class Enemy extends Entity {
    
 }
 
+class Bullet extends Entity {
+    constructor(x){
+        super();
+        this.x = 5 ;
+        this.y = 5 ;
+        this.sprite = images['bullet.png'];
+    //     this.speed = 0.75;
+    // }
+    // update(timeDiff) {
+    //       this.y = this.y -timeDiff * this.speed;
+        
+     }
+    
+    
+}
+
 class Player extends Entity {
     constructor() {
         super();
-        this.x = 2 * PLAYER_WIDTH;
+        this.x = GAME_WIDTH/2;
         this.y = GAME_HEIGHT - PLAYER_HEIGHT - 10;
         this.sprite = images['player.png'];
     }
+    
 
     // This method is called by the game engine when left/right arrows are pressed
     move(direction) {
@@ -75,29 +94,10 @@ class Player extends Entity {
             this.x = this.x + PLAYER_WIDTH;
         }
     }
-    shoot(){
-        new Bullet;
-    }
+   
+   
 }
 
-class Bullet {
-     constructor(xPos) {
-        this.x = 0;
-        this.y = 0;
-        this.sprite = images['bullet.png'];
-
-       //bullet speed
-        this.speed = 0.5;
-    }
-    update(timeDiff) {
-         this.y = this.y + timeDiff * -this.speed;
-     }
-    
-    render(ctx) {
-        ctx.drawImage(this.sprite, this.x, this.y);
-    
-    } 
-}
 
 
 
@@ -151,27 +151,40 @@ class Engine {
         while (!enemySpots || this.enemies[enemySpot]) {
             enemySpot = Math.floor(Math.random() * enemySpots);
         }
-
+        this.enemies.forEach((enemy, i) => {
+            if(this.score%2){
+                Enemy.sprite = images['player.png'];
+            }
+        });
         this.enemies[enemySpot] = new Enemy (enemySpot * ENEMY_WIDTH);
-    }
+   
+        }
+    
+    
+   
     
     // This method kicks off the game
     start() {
         this.score = 0;
         this.lastFrame = Date.now();
 
-        // Listen for keyboard left/right and update the player
+        // Listen for keyboard lef t/right and update the player
         document.addEventListener('keydown', e => {
             if (e.keyCode === LEFT_ARROW_CODE) {
                 this.player.move(MOVE_LEFT);
             }
+            else if (e.keyCode === D_CODE) {
+                   this.player.move(MOVE_RIGHT);
+             }
             else if (e.keyCode === RIGHT_ARROW_CODE) {
-                this.player.move(MOVE_RIGHT);
+                   this.player.move(MOVE_RIGHT);
+                   
             }
-            else if(e.keyCode === SPACEBAR_CODE) {
-                this.player.shoot();
+            else if (e.keyCode === A_CODE) {
+                this.player.move(MOVE_LEFT);
             }
-        });
+
+         });
 
         this.gameLoop();
     }
@@ -201,6 +214,7 @@ class Engine {
         this.ctx.drawImage(images['stars.png'], 0, 0); // draw the star bg
         this.enemies.forEach(enemy => enemy.render(this.ctx)); // draw the enemies
         this.player.render(this.ctx); // draw the player
+        
 
         // Check if any enemies should die
         this.enemies.forEach((enemy, enemyIdx) => {
@@ -235,6 +249,11 @@ class Engine {
        this.enemies.forEach((enemy, enemyIdx) => {
            if(enemy.x === this.player.x && enemy.y > hitbox) {
                 dead = true;
+                setTimeout(function(){
+                this.location.reload();
+                }, 3000);
+                
+                
                 return;
             }
        });
