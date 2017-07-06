@@ -266,7 +266,7 @@ class Engine {
         var timeDiff = currentFrame - this.lastFrame;
 
         // Increase the score!
-        this.score += timeDiff;
+        this.score += 1;
 
         // Call update on all enemies
         this.enemies.forEach(enemy => enemy.update(timeDiff));
@@ -291,7 +291,8 @@ class Engine {
             this.ctx.font = 'bold 30px Impact';
             this.ctx.fillStyle = '#ffffff';
             this.ctx.fillText(this.score + ' GAME OVER - PRESS ENTER TO RESTART', 5, 30);
-       
+            this.gameMusic.horn();
+            this.gameMusic.stopMusic();
         }
         else {
             // If player is not dead, then draw the score
@@ -303,6 +304,10 @@ class Engine {
             this.lastFrame = Date.now();
             requestAnimationFrame(this.gameLoop);
         }
+         if (this.score % 500 === 0) {
+                this.gameMusic.horn();
+                this.level += 1;
+            }
     }
 
      isPlayerDead() {
